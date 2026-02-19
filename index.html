@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demo Wallet</title>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<style>
+body{margin:0;font-family:Arial;background:#0b0f1a;color:white}
+.screen{display:none;padding:20px}
+.active{display:block}
+h1,h2{margin:10px 0}
+input{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:none}
+button{padding:12px;border:none;border-radius:8px;background:#2563eb;color:white;width:100%;margin-top:10px}
+.token{background:#111827;padding:15px;border-radius:10px;margin:8px 0;display:flex;justify-content:space-between}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#111827;display:flex}
+.nav button{flex:1;background:none;color:white}
+canvas{background:#111827;border-radius:10px;margin-top:10px}
+.center{text-align:center}
+
+/* splash */
+#splash{display:flex;align-items:center;justify-content:center;height:100vh;font-size:30px;font-weight:bold}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">Demo Wallet</div>
+
+<!-- LOGIN -->
+<div id="login" class="screen">
+<h2>Login</h2>
+<input placeholder="Email">
+<input placeholder="Password" type="password">
+<button onclick="show('wallet')">Enter Wallet</button>
+</div>
+
+<!-- WALLET -->
+<div id="wallet" class="screen">
+<h2>Total Balance</h2>
+<h1>$50,650,000</h1>
+
+<input placeholder="Search token..." oninput="search(this.value)">
+
+<div id="tokens">
+<div class="token"><span>Bitcoin</span><span>$12,450,000</span></div>
+<div class="token"><span>Ethereum</span><span>$8,900,000</span></div>
+<div class="token"><span>USDT</span><span>$25,000,000</span></div>
+<div class="token"><span>BNB</span><span>$4,300,000</span></div>
+</div>
+
+<canvas id="chart" width="300" height="120"></canvas>
+</div>
+
+<!-- SEND -->
+<div id="send" class="screen">
+<h2>Send Crypto</h2>
+<input placeholder="Wallet address">
+<input placeholder="Amount">
+<button onclick="fakeTx('Sent crypto')">Send</button>
+</div>
+
+<!-- RECEIVE -->
+<div id="receive" class="screen center">
+<h2>Receive</h2>
+<p>0xDEMO123456789ABC</p>
+<canvas id="qr"></canvas>
+</div>
+
+<!-- HISTORY -->
+<div id="history" class="screen">
+<h2>Transactions</h2>
+<div id="txlist"></div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+<button onclick="show('wallet')">Wallet</button>
+<button onclick="show('send')">Send</button>
+<button onclick="show('receive')">Receive</button>
+<button onclick="show('history')">History</button>
+</div>
+
+<script>
+
+/* splash delay */
+setTimeout(()=>{document.getElementById('splash').style.display='none';show('login')},1500)
+
+function show(id){
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'))
+document.getElementById(id).classList.add('active')
+if(id==="receive"){QRCode.toCanvas(document.getElementById('qr'),"0xDEMO123456789ABC")}
+if(id==="wallet"){drawChart()}
+}
+
+let txs=[]
+function fakeTx(t){
+txs.push(t+" — "+new Date().toLocaleString())
+renderTx()
+alert("Demo transaction created")
+}
+
+function renderTx(){
+document.getElementById('txlist').innerHTML=
+txs.map(t=>"<div class='token'>"+t+"</div>").join("")
+}
+
+function search(q){
+q=q.toLowerCase()
+document.querySelectorAll('#tokens .token').forEach(t=>{
+t.style.display=t.innerText.toLowerCase().includes(q)?"flex":"none"
+})
+}
+
+/* fake chart */
+function drawChart(){
+let c=document.getElementById('chart')
+let x=c.getContext('2d')
+x.clearRect(0,0,c.width,c.height)
+x.beginPath()
+x.moveTo(0,100)
+for(let i=0;i<300;i+=20){
+x.lineTo(i,Math.random()*80+20)
+}
+x.strokeStyle="#3b82f6"
+x.stroke()
+}
+
+/* PWA install */
+if('serviceWorker' in navigator){
+const sw=URL.createObjectURL(new Blob([`
+self.addEventListener('install',e=>self.skipWaiting());
+self.addEventListener('fetch',e=>{});
+`],{type:'text/javascript'}))
+navigator.serviceWorker.register(sw)
+}
+</script>
+
+</body>
+</html>
